@@ -184,7 +184,6 @@ def evaluate(split, permutation, verbose=False, n_batches=None):
     return loss, acc
 
 
-torch.manual_seed(0)
 permutation = torch.arange(10, dtype=torch.int64)
 # train the model one epoch at a time
 for epoch in range(1, args.epochs + 1):
