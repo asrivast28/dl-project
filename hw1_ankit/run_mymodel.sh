@@ -12,6 +12,7 @@ python -u train.py \
     --weight-decay 0.01 \
     --momentum 0.9 \
     --batch-size 200 \
+    --seed 0 \
     --lr 0.000278 | tee mymodel.log
 #############################################################################
 #                             END OF YOUR CODE                              #
