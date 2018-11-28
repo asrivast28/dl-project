@@ -58,6 +58,8 @@ class MyModel(nn.Module):
         #                             END OF YOUR CODE                              #
         #############################################################################
 
+        self._path = '/tmp'
+
     def forward(self, images):
         '''
         Take a batch of images and run them through the model to
@@ -95,3 +97,31 @@ class MyModel(nn.Module):
         #                             END OF YOUR CODE                              #
         #############################################################################
         return scores
+
+    def checkpoint(self):
+        torch.save(self, self._path + '/prev.pt')
+
+    def compare_weights(self):
+        prev = torch.load(self._path + '/prev.pt')
+        norms_c = [0 for n in range(self.N)]
+        for n in range(self.N):
+            norms_c[n] = float((torch.norm(self.W_c[n] - prev.W_c[n]) + torch.norm(self.b_c[n] - prev.b_c[n])).data[0])
+
+        norms_a = [0 for m in range(self.M)]
+        for m in range(self.M):
+            norms_a[m] = float((torch.norm(self.W_a[m] - prev.W_a[m]) + torch.norm(self.b_a[m] - prev.b_a[m])).data[0])
+
+        self.checkpoint()
+
+        return norms_c + norms_a
+
+    def level_grads(self):
+        norms_c = [0 for n in range(self.N)]
+        for n in range(self.N):
+            norms_c[n] = float((torch.norm(self.W_c[n].grad) + torch.norm(self.b_c[n].grad)).data[0])
+
+        norms_a = [0 for m in range(self.M)]
+        for m in range(self.M):
+            norms_a[m] = float((torch.norm(self.W_a[m].grad) + torch.norm(self.b_a[m].grad)).data[0])
+
+        return norms_c + norms_a

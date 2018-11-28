@@ -114,6 +114,9 @@ optimizer = optim.RMSprop(model.parameters(), lr=args.lr, momentum=args.momentum
 #                             END OF YOUR CODE                              #
 #############################################################################
 
+# initial checkpoint
+model.checkpoint()
+
 def train(epoch, permutation):
     '''
     Train the model for one epoch.
@@ -149,6 +152,8 @@ def train(epoch, permutation):
                   'Train Loss: {:.6f}\tVal Loss: {:.6f}\tVal Acc: {}'.format(
                 epoch, examples_this_epoch, len(train_loader.dataset),
                 epoch_progress, train_loss, val_loss, val_acc))
+            # print(str(epoch) + ',' + ','.join(str(g) for g in model.compare_weights()))
+            # print(str(epoch) + ',' + ','.join(str(g) for g in model.level_grads()))
 
 def evaluate(split, permutation, verbose=False, n_batches=None):
     '''
