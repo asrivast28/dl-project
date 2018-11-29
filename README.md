@@ -6,3 +6,4 @@ Following is a description of the directories/files in this repository (please u
 
 * **hw1_ankit** - This directory contains a modified version of Ankit's [HW1](https://www.cc.gatech.edu/classes/AY2019/cs7643_fall/hw1-q6/) submission. In particular, the *train.py* takes a new argument called `--permute-labels` which randomly permutes the label identifiers at the beginning of every epoch. This is used to test the robustness of the neural network against label permutations.
 * **scripts** - This is intended to be the common location for all the scripts.
+* **webpage** - This directory contains the webpage for final submission.
