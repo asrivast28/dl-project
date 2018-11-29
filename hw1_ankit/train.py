@@ -190,12 +190,13 @@ def evaluate(split, permutation, verbose=False, n_batches=None):
     return loss, acc
 
 
-permutation = torch.arange(10, dtype=torch.int64)
+permutation = torch.arange(n_classes, dtype=torch.int64)
 # train the model one epoch at a time
 for epoch in range(1, args.epochs + 1):
     if args.permute_labels:
-        permutation = torch.randperm(10)
+        permutation = torch.randperm(n_classes)
     train(epoch, permutation)
+    print(str(epoch) + ',' + ','.join(str(g) for g in model.compare_weights()))
 evaluate('test', permutation, verbose=True)
 
 # Save the model (architecture and weights)
