@@ -105,11 +105,13 @@ class MyModel(nn.Module):
         prev = torch.load(self._path + '/prev.pt')
         norms_c = [0 for n in range(self.N)]
         for n in range(self.N):
-            norms_c[n] = float((torch.norm(self.W_c[n] - prev.W_c[n]) + torch.norm(self.b_c[n] - prev.b_c[n])).data[0])
+            initial = float((torch.norm(prev.W_c[n]) + torch.norm(prev.b_c[n])).data[0])
+            norms_c[n] = float((torch.norm(self.W_c[n] - prev.W_c[n]) + torch.norm(self.b_c[n] - prev.b_c[n])).data[0]) / initial
 
         norms_a = [0 for m in range(self.M)]
         for m in range(self.M):
-            norms_a[m] = float((torch.norm(self.W_a[m] - prev.W_a[m]) + torch.norm(self.b_a[m] - prev.b_a[m])).data[0])
+            initial = float((torch.norm(prev.W_a[m]) + torch.norm(prev.b_a[m])).data[0])
+            norms_a[m] = float((torch.norm(self.W_a[m] - prev.W_a[m]) + torch.norm(self.b_a[m] - prev.b_a[m])).data[0]) / initial
 
         self.checkpoint()
 
