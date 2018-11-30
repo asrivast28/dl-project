@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import transforms
 from torch.autograd import Variable
-from cifar10 import CIFAR10
+from cifar100 import CIFAR100
 
 # You should implement these (softmax.py, twolayernn.py, convnet.py)
 import mymodel
@@ -43,8 +43,8 @@ parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                     help='input batch size for testing (default: 1000)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='number of batches between logging train status')
-parser.add_argument('--cifar10-dir', default='data/10',
-                    help='directory that contains cifar-10-batches-py/ '
+parser.add_argument('--cifar100-dir', default='data/100',
+                    help='directory that contains cifar-100-python/ '
                          '(downloaded automatically if necessary)')
 parser.add_argument('--permute-labels', action='store_true', default=False,
                     help='randomly permute class labels before every epoch')
@@ -55,28 +55,28 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-# Load CIFAR10 using torch data paradigm
+# Load CIFAR100 using torch data paradigm
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-# CIFAR10 meta data
-n_classes = 10
+# CIFAR100 meta data
+n_classes = 100
 im_size = (3, 32, 32)
 # Subtract the mean color and divide by standard deviation. The mean image
 # from part 1 of this homework was essentially a big gray blog, so
 # subtracting the same color for all pixels doesn't make much difference.
 # mean color of training images
-cifar10_mean_color = [0.49131522, 0.48209435, 0.44646862]
+cifar100_mean_color = [0.49131522, 0.48209435, 0.44646862]
 # std dev of color across training images
-cifar10_std_color = [0.01897398, 0.03039277, 0.03872553]
+cifar100_std_color = [0.01897398, 0.03039277, 0.03872553]
 transform = transforms.Compose([
                  transforms.ToTensor(),
-                 transforms.Normalize(cifar10_mean_color, cifar10_std_color),
+                 transforms.Normalize(cifar100_mean_color, cifar100_std_color),
             ])
 # Datasets
-train_dataset = CIFAR10(args.cifar10_dir, split='train', download=True,
+train_dataset = CIFAR100(args.cifar100_dir, split='train', download=True,
                         transform=transform)
-val_dataset = CIFAR10(args.cifar10_dir, split='val', download=True,
+val_dataset = CIFAR100(args.cifar100_dir, split='val', download=True,
                         transform=transform)
-test_dataset = CIFAR10(args.cifar10_dir, split='test', download=True,
+test_dataset = CIFAR100(args.cifar100_dir, split='test', download=True,
                         transform=transform)
 # DataLoaders
 train_loader = torch.utils.data.DataLoader(train_dataset,
@@ -108,14 +108,15 @@ if args.cuda:
 # TODO: Initialize an optimizer from the torch.optim package using the
 # appropriate hyperparameters found in args. This only requires one line.
 #############################################################################
-optimizer = optim.RMSprop(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+# optimizer = optim.RMSprop(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 # optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 #############################################################################
 #                             END OF YOUR CODE                              #
 #############################################################################
 
 # initial checkpoint
-model.checkpoint()
+# model.checkpoint()
 
 def train(epoch, permutation):
     '''
@@ -196,7 +197,7 @@ for epoch in range(1, args.epochs + 1):
     if args.permute_labels:
         permutation = torch.randperm(n_classes)
     train(epoch, permutation)
-    print(str(epoch) + ',' + ','.join(str(g) for g in model.compare_weights()))
+    # print(str(epoch) + ',' + ','.join(str(g) for g in model.compare_weights()))
 evaluate('test', permutation, verbose=True)
 
 # Save the model (architecture and weights)
