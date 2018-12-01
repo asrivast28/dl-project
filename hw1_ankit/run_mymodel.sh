@@ -68,7 +68,7 @@ python -u $train \
     --batch-size 128 \
     --seed ${seed} \
     --permute-labels \
-    --lr 0.1 | tee ${model}_${seed}_${labels}.log
+    --lr 0.001 | tee ${model}_${seed}_${labels}.log
 else
 python -u $train \
     --model mymodel \
@@ -79,7 +79,7 @@ python -u $train \
     --momentum 0.9 \
     --batch-size 128 \
     --seed ${seed} \
-    --lr 0.1 | tee ${model}_${seed}_${labels}.log
+    --lr 0.001 | tee ${model}_${seed}_${labels}.log
 fi
 
 fi
