@@ -173,7 +173,7 @@ def train(epoch, permutation):
         #############################################################################
         optimizer.zero_grad()
         output = model(images)
-        loss = criterion(output, targets, size_average=False)
+        loss = criterion(output, targets, size_average=False) / len(images)
         loss.backward()
         optimizer.step()
         #############################################################################
@@ -196,7 +196,7 @@ def pairwise_kl(outputs, centroids):
     '''
     Calculate pairwise distance between all pairs of outputs and centroids, using KL-divergence.
     '''
-    log_div = F.log_softmax(output, dim=1).view(outputs.shape[0], 1, outputs.shape[1]) - torch.log(centroids)
+    log_div = F.log_softmax(outputs, dim=1).view(outputs.shape[0], 1, outputs.shape[1]) - torch.log(centroids)
     kl_div = -1.0 * torch.sum(log_div * centroids.view(1, centroids.shape[0], centroids.shape[1]), dim=2)
     return kl_div
 
