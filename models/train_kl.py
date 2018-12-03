@@ -79,8 +79,6 @@ val_dataset = CIFAR100(args.cifar100_dir, split='val', download=False,
 test_dataset = CIFAR100(args.cifar100_dir, split='test', download=False,
                         transform=transform)
 # DataLoaders
-init_loader = torch.utils.data.DataLoader(train_dataset,
-                 batch_size=len(train_dataset), shuffle=False, **kwargs)
 train_loader = torch.utils.data.DataLoader(train_dataset,
                  batch_size=args.batch_size, shuffle=True, **kwargs)
 val_loader = torch.utils.data.DataLoader(val_dataset,
@@ -89,20 +87,8 @@ test_loader = torch.utils.data.DataLoader(test_dataset,
                  batch_size=args.batch_size, shuffle=True, **kwargs)
 
 # Load the model
-if args.model == 'softmax':
-    model = models.softmax.Softmax(im_size, n_classes)
-elif args.model == 'twolayernn':
-    model = models.twolayernn.TwoLayerNN(im_size, args.hidden_dim, n_classes)
-elif args.model == 'convnet':
-    model = models.convnet.CNN(im_size, args.hidden_dim, args.kernel_size,
-                               n_classes)
-elif args.model == 'mymodel':
-    model = mymodel.MyModel(im_size, args.hidden_dim,
-                            args.kernel_size, n_classes)
-else:
-    raise Exception('Unknown model {}'.format(args.model))
-# cross-entropy loss function
-criterion = F.cross_entropy
+model = mymodel.MyModel(im_size, args.hidden_dim,
+                        args.kernel_size, n_classes)
 if args.cuda:
     model.cuda()
 
@@ -138,19 +124,19 @@ def update_centroids(centroids):
             output = F.softmax(model(label_images), dim=1)
             centroids[label] = torch.mean(output, dim=0)
 
-
 # initial centroids 
-
 centroids = torch.cuda.FloatTensor(n_classes, n_classes) if args.cuda else torch.FloatTensor(n_classes, n_classes)
 
-def kl_from_centroid(output, targets, **kwargs):
+def kl_from_centroids(outputs, targets, **kwargs):
     '''
     Use the KL-Divergence from centroids to calculate the loss.
     '''
     # print(centroids)
-    return F.kl_div(F.log_softmax(output, dim=1), centroids[targets], **kwargs)
+    log_probs = F.log_softmax(outputs, dim=1)
+    return F.kl_div(log_probs, centroids[targets], **kwargs)
 
-criterion = kl_from_centroid
+
+criterion = kl_from_centroids
 
 
 def train(epoch, permutation):
@@ -172,8 +158,8 @@ def train(epoch, permutation):
         # This only requires a couple lines of code.
         #############################################################################
         optimizer.zero_grad()
-        output = model(images)
-        loss = criterion(output, targets, size_average=False) / len(images)
+        outputs = model(images)
+        loss = criterion(outputs, targets, size_average=False) / len(images)
         loss.backward()
         optimizer.step()
         #############################################################################
@@ -196,7 +182,8 @@ def pairwise_kl(outputs, centroids):
     '''
     Calculate pairwise distance between all pairs of outputs and centroids, using KL-divergence.
     '''
-    log_div = F.log_softmax(outputs, dim=1).view(outputs.shape[0], 1, outputs.shape[1]) - torch.log(centroids)
+    log_probs = F.log_softmax(outputs, dim=1)
+    log_div = log_probs.view(outputs.shape[0], 1, outputs.shape[1]) - torch.log(centroids)
     kl_div = -1.0 * torch.sum(log_div * centroids.view(1, centroids.shape[0], centroids.shape[1]), dim=2)
     return kl_div
 
@@ -218,13 +205,13 @@ def evaluate(split, permutation, verbose=False, n_batches=None):
         target = permutation[target]
         if args.cuda:
             data, target = data.cuda(), target.cuda()
-        output = model(data)
-        loss += criterion(output, target, size_average=False).data[0]
+        outputs = model(data)
+        loss += criterion(outputs, target, size_average=False).data[0]
         # print('pairwise_kl', pairwise_kl(output, centroids)[10, 15])
         # print('kl_div', F.kl_div(F.log_softmax(output[10]), centroids[15], size_average=False))
 
         # predict the label as that of the nearest centroid
-        pred = torch.argmin(pairwise_kl(output, centroids), dim=1)
+        pred = torch.argmin(pairwise_kl(outputs, centroids), dim=1)
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
         n_examples += pred.size(0)
         if n_batches and (batch_i >= n_batches):
