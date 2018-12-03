@@ -79,6 +79,8 @@ val_dataset = CIFAR100(args.cifar100_dir, split='val', download=True,
 test_dataset = CIFAR100(args.cifar100_dir, split='test', download=True,
                         transform=transform)
 # DataLoaders
+init_loader = torch.utils.data.DataLoader(train_dataset,
+                 batch_size=len(train_dataset), shuffle=False, **kwargs)
 train_loader = torch.utils.data.DataLoader(train_dataset,
                  batch_size=args.batch_size, shuffle=True, **kwargs)
 val_loader = torch.utils.data.DataLoader(val_dataset,
@@ -117,6 +119,36 @@ optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, we
 
 # initial checkpoint
 # model.checkpoint()
+
+def get_centroids():
+    '''
+    Get true cluster centroids, using true labels as cluster labels.
+    '''
+    with torch.no_grad():
+        centroids = torch.cuda.FloatTensor(n_classes, n_classes)
+        all_labels = np.asarray(train_dataset.train_labels)
+        for label in sorted(set(train_dataset.train_labels)):
+            label_indices = np.where(all_labels == label)[0]
+            label_loader = torch.utils.data.DataLoader(train_dataset,
+                             batch_size=label_indices.size, sampler=torch.utils.data.sampler.SubsetRandomSampler(label_indices),
+                             shuffle=False, **kwargs)
+            label_images = next(iter(label_loader))[0]
+            if args.cuda:
+                label_images = label_images.cuda()
+            output = F.softmax(model(label_images), dim=1)
+            centroids[label] = torch.mean(output, dim=0)
+    return centroids
+
+# centroids = get_centroids()
+
+def kl_from_centroid(output, targets, **kwargs):
+    '''
+    Calculate the KL-Divergence as the loss function.
+    '''
+    return F.kl_div(F.log_softmax(output), centroids[targets], **kwargs)
+
+# criterion = kl_from_centroid
+
 
 def train(epoch, permutation):
     '''
