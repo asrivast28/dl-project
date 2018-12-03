@@ -72,13 +72,15 @@ transform = transforms.Compose([
                  transforms.Normalize(cifar100_mean_color, cifar100_std_color),
             ])
 # Datasets
-train_dataset = CIFAR100(args.cifar100_dir, split='train', download=True,
+train_dataset = CIFAR100(args.cifar100_dir, split='train', download=False,
                         transform=transform)
-val_dataset = CIFAR100(args.cifar100_dir, split='val', download=True,
+val_dataset = CIFAR100(args.cifar100_dir, split='val', download=False,
                         transform=transform)
-test_dataset = CIFAR100(args.cifar100_dir, split='test', download=True,
+test_dataset = CIFAR100(args.cifar100_dir, split='test', download=False,
                         transform=transform)
 # DataLoaders
+init_loader = torch.utils.data.DataLoader(train_dataset,
+                 batch_size=len(train_dataset), shuffle=False, **kwargs)
 train_loader = torch.utils.data.DataLoader(train_dataset,
                  batch_size=args.batch_size, shuffle=True, **kwargs)
 val_loader = torch.utils.data.DataLoader(val_dataset,
@@ -118,6 +120,39 @@ optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, we
 # initial checkpoint
 # model.checkpoint()
 
+def update_centroids(centroids):
+    '''
+    Get true cluster centroids, using true labels as cluster labels.
+    '''
+    print('Updating centroids...')
+    with torch.no_grad():
+        all_labels = np.asarray(train_dataset.train_labels)
+        for label in sorted(set(train_dataset.train_labels)):
+            label_indices = np.where(all_labels == label)[0]
+            label_loader = torch.utils.data.DataLoader(train_dataset,
+                             batch_size=label_indices.size, sampler=torch.utils.data.sampler.SubsetRandomSampler(label_indices),
+                             shuffle=False, **kwargs)
+            label_images = next(iter(label_loader))[0]
+            if args.cuda:
+                label_images = label_images.cuda()
+            output = F.softmax(model(label_images), dim=1)
+            centroids[label] = torch.mean(output, dim=0)
+
+
+# initial centroids 
+
+centroids = torch.cuda.FloatTensor(n_classes, n_classes) if args.cuda else torch.FloatTensor(n_classes, n_classes)
+
+def kl_from_centroid(output, targets, **kwargs):
+    '''
+    Use the KL-Divergence from centroids to calculate the loss.
+    '''
+    # print(centroids)
+    return F.kl_div(F.log_softmax(output, dim=1), centroids[targets], **kwargs)
+
+criterion = kl_from_centroid
+
+
 def train(epoch, permutation):
     '''
     Train the model for one epoch.
@@ -138,7 +173,7 @@ def train(epoch, permutation):
         #############################################################################
         optimizer.zero_grad()
         output = model(images)
-        loss = criterion(output, targets)
+        loss = criterion(output, targets, size_average=False)
         loss.backward()
         optimizer.step()
         #############################################################################
@@ -155,6 +190,16 @@ def train(epoch, permutation):
                 epoch_progress, train_loss, val_loss, val_acc))
             # print(str(epoch) + ',' + ','.join(str(g) for g in model.compare_weights()))
             # print(str(epoch) + ',' + ','.join(str(g) for g in model.level_grads()))
+
+
+def pairwise_kl(outputs, centroids):
+    '''
+    Calculate pairwise distance between all pairs of outputs and centroids, using KL-divergence.
+    '''
+    log_div = F.log_softmax(output, dim=1).view(outputs.shape[0], 1, outputs.shape[1]) - torch.log(centroids)
+    kl_div = -1.0 * torch.sum(log_div * centroids.view(1, centroids.shape[0], centroids.shape[1]), dim=2)
+    return kl_div
+
 
 def evaluate(split, permutation, verbose=False, n_batches=None):
     '''
@@ -173,11 +218,13 @@ def evaluate(split, permutation, verbose=False, n_batches=None):
         target = permutation[target]
         if args.cuda:
             data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, volatile=True), Variable(target)
         output = model(data)
         loss += criterion(output, target, size_average=False).data[0]
-        # predict the argmax of the log-probabilities
-        pred = output.data.max(1, keepdim=True)[1]
+        # print('pairwise_kl', pairwise_kl(output, centroids)[10, 15])
+        # print('kl_div', F.kl_div(F.log_softmax(output[10]), centroids[15], size_average=False))
+
+        # predict the label as that of the nearest centroid
+        pred = torch.argmin(pairwise_kl(output, centroids), dim=1)
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
         n_examples += pred.size(0)
         if n_batches and (batch_i >= n_batches):
@@ -196,8 +243,8 @@ permutation = torch.arange(n_classes, dtype=torch.int64)
 for epoch in range(1, args.epochs + 1):
     if args.permute_labels:
         permutation = torch.randperm(n_classes)
+    update_centroids(centroids)
     train(epoch, permutation)
-    # print(str(epoch) + ',' + ','.join(str(g) for g in model.compare_weights()))
 evaluate('test', permutation, verbose=True)
 
 # Save the model (architecture and weights)
