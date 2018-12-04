@@ -163,7 +163,7 @@ def get_centroids():
     for i in np.arange(k):
       centroids[i, :] = torch.mean(fscores[flab == i, :], 0)
   
-    return centroids
+    return F.normalize(centroids)
 
 def train(epoch, permutation):
     '''
@@ -185,7 +185,7 @@ def train(epoch, permutation):
         # This only requires a couple lines of code.
         #############################################################################
         optimizer.zero_grad()
-        output = model(images)
+        output = F.normalize(model(images))
         # loss = criterion(output, targets)
         loss = criterion(output, targets, centroids)
         loss.backward()
@@ -223,7 +223,7 @@ def evaluate(split, permutation, centroids, verbose=False, n_batches=None):
         if args.cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data, volatile=True), Variable(target)
-        output = model(data)
+        output = F.normalize(model(data))
         loss += criterion(output, target, centroids).data[0]
         # predict the argmax of the log-probabilities
         # pred = output.data.max(1, keepdim=True)[1]
