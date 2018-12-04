@@ -45,12 +45,12 @@ This webpage template is based on a similar template from Dr. Devi Parikh's
 One or two sentences on the motivation behind the problem you are solving. One or two sentences describing the approach you took. One or two sentences on the main result you obtained.
 <br><br>
 <!-- figure -->
-<h2>Teaser figure</h2>
-A figure that conveys the main idea behind the project or the main application being addressed. (This one is from <a href="https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks">AlexNet</a>.)
-<br><br>
+<!--<h2>Teaser figure</h2>-->
+<!--A figure that conveys the main idea behind the project or the main application being addressed. (This one is from <a href="https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks">AlexNet</a>.)-->
 <!-- Main Illustrative Figure --> 
 <div style="text-align: center;">
-<img style="height: 300px;" alt="" src="images/convnet_test_acc.png">
+  <img style="height: 300px;" alt="" src="images/deepcluster_training.png">
+  <figcaption>Fig.1 - Unsupervised training approach used by DeepCluster [1]</figcaption>
 </div>
 
 <br><br>
@@ -69,6 +69,7 @@ For example, the difference between the accuracy of supervised AlexNet [2] and u
 This gap needs to be closed for the unsupervised learning based approaches to gain popular acceptance.
 <br><br>
 In this project, we attempted to close this gap by trying to improve the methodology used in the state-of-the-art in unsupervised learning, i.e., DeepCluster [1].
+The training method in [1] relies on generating "pseudo-labels" for images and then using these labels for training the network iteratively.
 Specifically, we set out to confirm our intuition about some problems with the way the pseudo-labels for images are generated in [1] and, then, explore different ideas to address those problems.
 We hoped that this would improve the accuracy of models trained using unsupervised learning methods for the image classification task.
 
@@ -79,9 +80,10 @@ The unsupervised learning in [1] is done by alternating between the following tw
     as pseudo-labels for the corresponding training images.
   <li> The pseudo-labels generated in the previous step are used for updating the model parameters with one pass through the training dataset.
 </ol>
-The above steps are repeated until some convergence criterion is satisfied.
-However, based on our prior experience with the <i>k</i>-means algorithm, we suspected that the algorithm labels clusters in a non-deterministic way, i.e., given the same features,
-the algorithm can permute pseudo-labels across epochs. This means that all the images labeled as 1 in one epoch might be labled as 12 in the next epoch.
+The above steps are repeated until some convergence criterion is satisfied. This methodology is visualized in Fig. 1.
+<br><br>
+Based on our prior experience with the <i>k</i>-means algorithm, we suspected that the algorithm labels clusters in a non-deterministic way, i.e., given the same features,
+the algorithm can change the pseudo-labels assigned to images across epochs. This means that all the images labeled as 1 in one epoch might be labled as 12 in the next epoch.
 Since the loss function is not permutation invariant, permuting the pseudo-labels increases the loss and training time of the models.
 We conjectured that inaccuracy of the pseudo-labels results in the loss of accuracy. In this project, we will only discuss the influence of permuted labels on the deep learning networks.
 We explore if the instability of k-means affect the accuracy of such approach, and we propose [2?] methods to stabilize the pseudo-labels to improve the accuracy of the convnet.
