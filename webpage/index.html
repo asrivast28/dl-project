@@ -56,9 +56,9 @@ One or two sentences on the motivation behind the problem you are solving. One o
 <br><br>
 <!-- Introduction -->
 <h2>Introduction / Background / Motivation</h2>
-Previous works [cite] have shown that it is possible adapt density estimation or dimensionality reduction to supervised deep learning models,
-to produce a promising image classification on unlabeled data. In this project, we study the result in [1], DeepCluster, which uses the <i>k</i>-means cluster assignments on
-convnet features as pseudo-labels to learn the parameters for the convolutional neural network. We will describe this approach in detail in the next section.
+<!--Previous works [cite] have shown that it is possible adapt density estimation or dimensionality reduction to supervised deep learning models,-->
+<!--to produce a promising image classification on unlabeled data. In this project, we study the result in [1], DeepCluster, which uses the <i>k</i>-means cluster assignments on-->
+<!--convnet features as pseudo-labels to learn the parameters for the convolutional neural network.-->
 
 <h4>What did you try to do? What problem did you try to solve? Articulate your objectives using absolutely no jargon. (5 points)</h4>
 Datasets used in the state-of-the-art neural network training, even ImageNet [2] which contains millions of images, are relatively small as compared to the capacity of the current networks.
@@ -72,6 +72,10 @@ In this project, we attempted to close this gap by trying to improve the methodo
 The training method in [1] relies on generating "pseudo-labels" for images and then using these labels for training the network iteratively.
 Specifically, we set out to confirm our intuition about some problems with the way the pseudo-labels for images are generated in [1] and, then, explore different ideas to address those problems.
 We hoped that this would improve the accuracy of models trained using unsupervised learning methods for the image classification task.
+ <!--In this project, we will only discuss the influence of permuted labels on the deep learning networks.-->
+<!--We explore if the instability of k-means affect the accuracy of such approach, and we propose [2?] methods to stabilize the pseudo-labels to improve the accuracy of the convnet.-->
+<!--In this project, we also study the relevance between stability of the correct labels and the behavior of various popular networks.-->
+
 
 <h4>How is it done today, and what are the limits of current practice? (5 points)</h4>
 The unsupervised learning in [1] is done by alternating between the following two steps:
@@ -83,16 +87,15 @@ The unsupervised learning in [1] is done by alternating between the following tw
 The above steps are repeated until some convergence criterion is satisfied. This methodology is visualized in Fig. 1.
 <br><br>
 Based on our prior experience with the <i>k</i>-means algorithm, we suspected that the algorithm labels clusters in a non-deterministic way, i.e., given the same features,
-the algorithm can change the pseudo-labels assigned to images across epochs. This means that all the images labeled as 1 in one epoch might be labled as 12 in the next epoch.
-Since the loss function is not permutation invariant, permuting the pseudo-labels increases the loss and training time of the models.
-We conjectured that inaccuracy of the pseudo-labels results in the loss of accuracy. In this project, we will only discuss the influence of permuted labels on the deep learning networks.
-We explore if the instability of k-means affect the accuracy of such approach, and we propose [2?] methods to stabilize the pseudo-labels to improve the accuracy of the convnet.
-In this project, we also study the relevance between stability of the correct labels and the behavior of various popular networks.
+the algorithm can permute the pseudo-labels assigned to images across epochs. This means that, for example, in a case with three clusters, the output cluster assignment can be any arbitrary mapping of the ordered set (0, 1, 2).
+Since the loss function used in [1] is not permutation invariant, we conjectured that if the pseudo-labels are indeed getting permuted then it would lead to the loss of accuracy and also increase the training time of the models.
 
 
 <h4>Who cares? If you are successful, what difference will it make? (5 points)</h4>
-If our experiments succeed, we will be able to increase the accuracy of DeepCluster, which outperforms all the state-of-the-art unsupervised learning methods.
-Moreover, we will explore more stable existing supervised learning networks that can be applied with pseudo-labels and extend them to be unsupervised.
+Our project is aimed at improving the accuracy of the state-of-the-art in unsupervised learning methods. As discussed earlier, the accuracy gap between supervised and unsupervised learning methods
+is hindering widespread acceptance of the unsupervised learning methods. If the work done in this project makes a step towards closing this gap, then that would assist in a move towards using larger
+unlabeled datasets which can utilize current capacity of neural networks.
+Moreover, this would allow existing stable supervised learning networks to be extended using unsupervised learning on pseudo-labels.
 
 <br><br>
 <!-- Approach -->
@@ -104,19 +107,28 @@ DeepCluster adapts Alexnet with five convolutional layers with 96, 256, 383, 384
   <li>If the first 2 succeed, try to stabilize the labels learned by k-means to inprove the overall accuracy</li>
 </ul>
 Due to the limited time and resources, we scale down the size of each problem as follows:
-Run k-means on a randomly generated mixture of Gaussians
-TODO: theoretical background that k-means returns same centroids on such data??
-Permute true labels, VGG, ResNet, twoLayerNN w/ CIFAR10, CIFAR100
-KL-divergence && ???
+<ul>
+  <li>Run k-means on a randomly generated mixture of Gaussians
+  <li>Permuting the target labels during traning VGG, ResNet, twoLayerNN for both CIFAR10 and CIFAR100
+</ul>
 
 <h4>What did you do exactly? How did you solve the problem? Why did you think it would be successful? Is anything new in your approach? (10 points)</h4>
-The purpose of this project was to improve upon the accuracy of classification achieved in [1]. We believed that this was an attainable objective because of the following two key intuitions about the approach 
+The purpose of this project was to improve upon the accuracy of classification achieved in [1]. We believed that this was an attainable objective because of the following two key intuitions about the approach
 used in [1] for training the model:
-<h5> 1. the labels generated by <i>k</i>-means clustering can permute across runs </h5>
+<h5> 1. generate a mixture of Gaussians and use <i>k</i>-means algorithm to cluster it </h5>
+As described earlier, cluster assignments generated by the <i>k</i>-means algorithm are used as pseudo-labels for training the model. We surmised that the cluster assignments generated by the algorithm are arbitrary
+and can permute across runs. We generate a mixture of Gaussians that can be easily seperate by <i>k</i>-means algorithm to prevent the difference of algorithm converging to different local optimums. We define the degree of permutation of the centroids <img src="http://latex.codecogs.com/gif.latex?\{c_1, c_2, ..., c_n\}" border="0"/> to be <br>
+<center>
+  <img src="http://latex.codecogs.com/gif.latex?f(C) = ||c_i - c^*_i||_2" border="0"/>, <br>
+</center>
+where <i>c<cap>*</cap><sub>i</sub>'s</i> are obtained by ordering <i>c'<sub>i</sub>'s</i>.
+Since <i>c<cap>*</cap><sub>i</sub>'s</i> are guaranteed to be the same during all executions, this method measures how different <i>k</i>-means algorithm labels the clusters.
+
+<h5> 2. the labels generated by <i>k</i>-means clustering can permute across runs </h5>
 As described earlier, cluster assignments generated by the <i>k</i>-means algorithm are used as pseudo-labels for training the model. We surmised that the cluster assignments generated by the algorithm are arbitrary
 and can permute across runs. We confirmed our intuition by running <i>k</i>-means algorithm on toy datasets, the results of which are described later.
 
-<h5> 2. permuting the target labels during training should have a detrimental effect on the model </h5>
+<h5> 3. permuting the target labels during training should have a detrimental effect on the model </h5>
 Second, permuting the labels of classes between epochs should lead to a reduction
 in the classification accuracy achieved by the neural network.
 
