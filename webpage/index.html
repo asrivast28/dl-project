@@ -61,10 +61,16 @@ to produce a promising image classification on unlabeled data. In this project, 
 convnet features as pseudo-labels to learn the parameters for the convolutional neural network. We will describe this approach in detail in the next section.
 
 <h4>What did you try to do? What problem did you try to solve? Articulate your objectives using absolutely no jargon. (5 points)</h4>
-As is reported in [1], there is a 3% to 12% accuracy gap between unsupervised DeepCluster[1] and supervised AlexNet[2] on the ImageNet[3] dataset.
-We conjectured that inaccuracy of the pseudo-labels results in the loss of accuracy. In this project, we will only discuss the influence of permuted labels on the deep learning networks.
-We explore if the instability of k-means affect the accuracy of such approach, and we propose [2?] methods to stabilize the pseudo-labels to improve the accuracy of the convnet.
-In this project, we also study the relevance between stability of the correct labels and the behavior of various popular networks.
+Datasets used in the state-of-the-art neural network training, even ImageNet [2] which contains millions of images, are relatively small as compared to the capacity of the current networks.
+But, building larger labeled datasets for supervised learning requires a tremendous amount of manual work.
+Therefore, a natural way forward is to train on massive unlabeled datasets using unsupervised learning [4].
+However, currently, there is an accuracy gap between the accuracy of models trained using unsupervised learning as compared to those trained using supervised learning.
+For example, the difference between the accuracy of supervised AlexNet [2] and unsupervised DeepCluster [1] on classifying images in the ImageNet dataset is between 3% to 12%.
+This gap needs to be closed for the unsupervised learning based approaches to gain popular acceptance.
+<br><br>
+In this project, we attempted to close this gap by trying to improve the methodology used in the state-of-the-art in unsupervised learning, i.e., DeepCluster [1].
+Specifically, we set out to confirm our intuition about some problems with the way the pseudo-labels for images are generated in [1] and, then, explore different ideas to address those problems.
+We hoped that this would improve the accuracy of models trained using unsupervised learning methods for the image classification task.
 
 <h4>How is it done today, and what are the limits of current practice? (5 points)</h4>
 The unsupervised learning in [1] is done by alternating between the following two steps:
@@ -73,12 +79,16 @@ The unsupervised learning in [1] is done by alternating between the following tw
     as pseudo-labels for the corresponding training images.
   <li> The pseudo-labels generated in the previous step are used for updating the model parameters with one pass through the training dataset.
 </ol>
-The above steps are repeated until some convergence criterion is satisfied. However, we demonstrate later that <i>k</i>-means algorithm labels clusters in a non-deterministic way, i.e., given the same features,
-the algorithm can permute pseudo-labels across epochs. Since the loss function is not permutation invariant, permuting the pseudo-labels increases the loss and convergence time [true??] of the deep networks.
+The above steps are repeated until some convergence criterion is satisfied.
+However, based on our prior experience with the <i>k</i>-means algorithm, we suspected that the algorithm labels clusters in a non-deterministic way, i.e., given the same features,
+the algorithm can permute pseudo-labels across epochs. This means that all the images labeled as 1 in one epoch might be labled as 12 in the next epoch.
+Since the loss function is not permutation invariant, permuting the pseudo-labels increases the loss and training time of the models.
+We conjectured that inaccuracy of the pseudo-labels results in the loss of accuracy. In this project, we will only discuss the influence of permuted labels on the deep learning networks.
+We explore if the instability of k-means affect the accuracy of such approach, and we propose [2?] methods to stabilize the pseudo-labels to improve the accuracy of the convnet.
+In this project, we also study the relevance between stability of the correct labels and the behavior of various popular networks.
+
 
 <h4>Who cares? If you are successful, what difference will it make? (5 points)</h4>
-Datasets used in state-of-art machine learning trainings, even ImageNet which contains millions of images, is relatively small by today’s standards.
-Building larger datasets will require tremendous amount of manual work. A natural way to move forward is to train massive size dataset with unsupervised network.[4] 
 If our experiments succeed, we will be able to increase the accuracy of DeepCluster, which outperforms all the state-of-the-art unsupervised learning methods.
 Moreover, we will explore more stable existing supervised learning networks that can be applied with pseudo-labels and extend them to be unsupervised.
 
