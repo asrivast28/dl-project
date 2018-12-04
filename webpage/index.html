@@ -50,7 +50,7 @@ A figure that conveys the main idea behind the project or the main application b
 <br><br>
 <!-- Main Illustrative Figure --> 
 <div style="text-align: center;">
-<img style="height: 200px;" alt="" src="images/alexnet.png">
+<img style="height: 300px;" alt="" src="images/convnet_test_acc.png">
 </div>
 
 <br><br>
@@ -85,6 +85,18 @@ Moreover, we will explore more stable existing supervised learning networks that
 <br><br>
 <!-- Approach -->
 <h2>Approach</h2>
+DeepCluster adapts Alexnet with five convolutional layers with 96, 256, 383, 384 	and 256 filters; and of three fully connected layers. The original experiments trains for 500 epochs on ImageNet, which takes 12 days on a Pascal P100 GPU. We first separate the problem into the following tasks:
+<ul>
+  <li>Verify if k-means generating labels non deterministically</li>
+  <li>Explore the influence of permuting labels every epoch when computing the loss</li>
+  <li>If the first 2 succeed, try to stabilize the labels learned by k-means to inprove the overall accuracy</li>
+</ul>
+Due to the limited time and resources, we scale down the size of each problem as follows:
+Run k-means on a randomly generated mixture of Gaussians
+TODO: theoretical background that k-means returns same centroids on such data??
+Permute true labels, VGG, ResNet, twoLayerNN w/ CIFAR10, CIFAR100
+KL-divergence && ???
+
 <h4>What did you do exactly? How did you solve the problem? Why did you think it would be successful? Is anything new in your approach? (10 points)</h4>
 The purpose of this project was to improve upon the accuracy of classification achieved in [1]. We believed that this was an attainable objective because of the following two key intuitions about the approach 
 used in [1] for training the model:
@@ -108,8 +120,14 @@ Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed 
 <br><br>
 
 <!-- Main Results Figure --> 
-<div style="text-align: center;">
-<img style="height: 300px;" alt="" src="images/results.png">
+<div class="row" style="text-align: center;">
+  <div class="column">
+    <img style="height:350px; width:85%" alt="" src="images/convnet_test_acc.png">
+  </div>
+
+  <div class="column">
+    <img style="height:340px; width:100%" alt="" src="images/resnet_test_acc.png">
+  </div>
 </div>
 <br><br>
 
