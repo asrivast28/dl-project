@@ -293,12 +293,13 @@ We implemented the two loss functions discussed earlier, KL-divergence and L2-di
 However, our initial implementations did not result in any meaningful accuracy on the CIFAR-100 dataset.
 We observed that, while training, the losses decreased very quickly to very small values (less than 1e-6), which may have been causing the issue.
 On the other hand, any attempts at increasing losses by multiplying with scalars resulted in divergence.
-Due to the time bound nature of the project, we were unable to debug our implementations further.
+Due to the time bound nature of the project, we were unable to investigate this further.
 Therefore, we do not have any results to present for the implementations of these (allegedly permutation-invariant) loss functions. However, we intend to continue this work and improve the accuracy achieved by DeepCluster.
 <br><br>
 <h3>Future Works</h3>
 <ul>
-  <li> As mentioned in the results section, we were unable to debug our implementations of the two loss functions that we proposed and implemented. Therefore, our next step will be to debug issues with the loss functions. </li>
+  <li> As mentioned in the results section, we were unable to further investigate the low accuracy we observed using our implementations of the two loss functions that we proposed and implemented.
+    Therefore, our next step will be to examine this further. </li>
   <li> We also want to analyze the ratio of permutation frequency versus test accuracy for CIFAR-100. This will give us an insight into how long it takes for a network to learn the permutation. </li>
   <li> Finally, we will explore the possibility of defining a permutation invariant distance between different clusterings, and design algorithms to permute the clusters such that each cluster is labeled the same throughout the training </li>
 </ul>
