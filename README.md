@@ -7,4 +7,4 @@ Following is a description of the directories/files in this repository (please u
 * **models** - This directory contains all the models and the training script.
 * **scripts** - This is intended to be the common location for all the scripts.
 * **logs** - This directory contains all the log files.
-* **webpage** - This directory contains the webpage for final submission.
+* **project_webpage** - This directory contains the webpage for final submission.
