@@ -154,9 +154,9 @@ Therefore, we can use some distance measure from the centroids as the loss funct
 <ul>
   <li> <b>Kullback–Leibler divergence</b> loss has been used in some of the previous works [8, 9] for image classification task. For using this loss function, we first convert the output features to probabilities using the softmax function.
     Then, we calculate the centroid for every cluster as the average of the softmax-probabilities for all the images classified in that cluster. Finally, we use KL-divergence between the centroid and the softmax-probabilities for images
-    in the corresponding cluster as a measure of the loss.
-  <li> <b>L2-distance</b> loss also seems to work well for some image classification tasks. Similar to the case of KL-divergence, we calculate the centroids by averaging the outputs of all the images in the clusters.
-    However, unlike KL-divergence, we do not need probabilities for calculating L2-distances therefore softmax function is not used.
+    in the corresponding cluster as a measure of the loss. For prediction we pick the class with highest probability as the predicted label.
+  <li> <b>L2-distance</b> loss also seems to work well for some unsupervised image classification tasks [10, 11]. Similar to the case of KL-divergence, we calculate the centroids by averaging the outputs of all the images in the clusters.
+    However, unlike KL-divergence, we do not need probabilities for calculating L2-distances therefore softmax function is not used. For prediction we choose the label of nearest centroid as our predicted label.
 </ul>
 <br>
 The above key intuition has not been used for unsupervised training using <i>k</i>-means clustering. Again, the original paper does not discuss the effect of different loss functions on the accuracy of the network.
@@ -277,6 +277,8 @@ This led us to conclude that the fully connected layer is learning the permutati
   <li> Krizhevsky, Alex, Vinod Nair, and Geoffrey Hinton. "The CIFAR-10 dataset." <i>online: http://www.cs.toronto.edu/kriz/cifar.html</i> (2014).</li>
   <li> Kwitt, Roland, and Andreas Uhl. "Image similarity measurement by Kullback-Leibler divergences between complex wavelet subband statistics for texture retrieval." In <i>Image Processing, 2008. ICIP 2008. 15th IEEE International Conference on</i>, pp. 933-936. IEEE, 2008.</li>
   <li> Pheng, Hang See, Siti Mariyam Shamsuddin, Wong Yee Leng, and Razana Alwee. "Kullback Leibler divergence for image quantitative evaluation." In <i>AIP Conference Proceedings</i>, vol. 1750, no. 1, p. 020003. AIP Publishing, 2016. </li>
+  <li> Dhillon, Inderjit S., Yuqiang Guan, and Brian Kulis. "Kernel k-means: spectral clustering and normalized cuts." In <i>Proceedings of the tenth ACM SIGKDD international conference on Knowledge discovery and data mining</i>, pp. 551-556. ACM, 2004. </li>
+  <li> Lee, Daniel D., and H. Sebastian Seung. "Learning the parts of objects by non-negative matrix factorization." <i>Nature</i> 401, no. 6755 (1999): 788. </li>
 </ol>
 
 <!-- Additional Points to Consider (REMOVE BEFORE SUBMISSION) -->
