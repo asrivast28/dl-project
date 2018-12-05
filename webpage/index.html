@@ -55,7 +55,7 @@ Combine these two result, we propose a new loss function to stablize the cluster
 <!-- Main Illustrative Figure --> 
 <div style="text-align: center;">
   <img style="height: 300px;" alt="" src="images/deepcluster_training.png">
-  <figcaption>Fig.1 - Unsupervised training approach used by DeepCluster [1]</figcaption>
+  <figcaption>Fig.1: Unsupervised training approach used by DeepCluster [1]</figcaption>
 </div>
 
 <br><br>
@@ -89,7 +89,7 @@ The unsupervised learning in [1] is done by alternating between the following tw
     as pseudo-labels for the corresponding training images.
   <li> The pseudo-labels generated in the previous step are used for updating the model parameters with one pass through the training dataset.
 </ol>
-The above steps are repeated until some convergence criterion is satisfied. This methodology is visualized in Fig. 1.
+The above steps are repeated until some convergence criterion is satisfied. This methodology is visualized in Fig.1.
 <br><br>
 Based on our prior experience with the <i>k</i>-means algorithm, we suspected that the algorithm labels clusters in a non-deterministic way, i.e., given the same features,
 the algorithm can permute the pseudo-labels assigned to images across epochs. This means that, for example, in a case with three clusters, the output cluster assignment can be any arbitrary mapping of the ordered set (0, 1, 2).
@@ -168,32 +168,33 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 <br><br>
 <!-- Results -->
 <h2>Experiments and Results</h2>
+<h4>How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? (10 points)</h4>
 DeepCluster uses a standard AlexNet architecture which consists of five convolutional layers with 96, 256, 383, 384, and 256 filters; and three fully connected layers.
-The original experiments trains for 500 epochs on ImageNet, which takes 12 days on a Pascal P100 GPU. :
-Due to the limited time and resources, we scale down the size of each problem as follows:
+The original experiments train for 500 epochs on ImageNet, which takes 12 days on a Pascal P100 GPU. Due to the limited time and resources, we scaled down the size of each problem as follows:
 <ul>
   <li>Run k-means on a randomly generated mixture of Gaussians
   <li>Permuting the target labels during traning VGG [5], ResNet [6], twoLayerNN for both CIFAR-10 and CIFAR-100 [7].
 </ul>
 
-<h4>How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? (10 points)</h4>
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-<br><br>
-
-<!-- Main Results Figure -->
 <h5> 1. Label stability via <i>k</i>-means clustering </h5>
-Our first experiment was to check if the <i>k</i>-means algorithm permutes clusters across multiple iterations. We generated a toy dataset comprising of 3 clusters drawn from Guassian Distributions with different centres. We then ran the <i>k</i>-means algorithm for 10 iterations and checked the Frobenius norm difference between the centroids discoverd from the original centroids. We also sort the centroids lexicographically and plot the Frobenius difference. As seen from the figure below even though the algorithm successfully discovered the correct centroids for every run there is still a large error when compared to the original centroids unless they are sorted to avoid permutations.
+Our first experiment was to check if the <i>k</i>-means algorithm permutes clusters across multiple iterations.
+We generated a toy dataset comprising of 3 clusters drawn from Guassian Distributions with different centres. The generated points are shown in Fig.2(a).
+We then ran the <i>k</i>-means algorithm for 10 iterations and checked the Frobenius norm difference between the centroids discoverd from the original centroids.
+We also sort the centroids lexicographically and plot the Frobenius difference.
 <div class="row" style="text-align: center;">
   <div class="column">
-    <img style="height:350px; width:85%" alt="" src="images/gmmdat.pdf">
+    <img style="height:350px; width:70%" alt="" src="images/gmmdat.png">
+    <figcaption>Fig.2(a): Points generated using a Gaussian Mixture Model</figcaption>
   </div>
 
   <div class="column">
-    <img style="height:340px; width:100%" alt="" src="images/gmmpermerr.pdf">
+    <img style="height:350px;" alt="" src="images/gmmpermerr.png">
+    <figcaption>Fig.2(b): Frobenius norm between centroids with the same label across iterations</figcaption>
   </div>
 </div>
-<br><br>
+<br>
+As can be seen from Fig.2(b), even though the algorithm successfully discovered the correct centroids for every run there is still a large error when compared to the original centroids unless they are sorted to avoid permutations.
+Therefore, the results of this experiment demonstrated that our first conjecture was correct, i.e., <i>k</i>-means algorithm arbirarily permutes the cluster assignments.
 
 <br><br>
 
