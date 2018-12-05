@@ -287,6 +287,11 @@ for ResNet and VGG in Fig.5(a) and 5(b) below.
 From the above plots, it can be seen that, for both the networks, the permutation of labels consistently results in a lower test accuracy.
 Therefore, in conclusion, we were able to prove our initial intuition that the permutation of the labels results in lower accuracy.
 Although, in the process, we found out that networks are robust to permutations when the number of classes is small.
+<h5> 3. Stabilizing the training with <i>k</i>-means clustering </h5>
+We implemented the two loss functions discussed earlier, KL-divergence and L2-distance, and the corresponding functions for predicting labels in
+<a href="https://github.com/asrivast28/dl-project/blob/master/models/train_kl.py">train_kl.py</a> and <a href="https://github.com/asrivast28/dl-project/blob/master/models/train_l2.py">train_l2.py</a>, respectively.
+However, our initial implementations did not result in any meaningful accuracy on the CIFAR-100 dataset. Due to the time bound nature of the project, we were unable to debug our implementations further.
+Therefore, we do not have any results to present for the implementations. However, we intend to continue this work and improve the accuracy achieved by DeepCluster.
 <br><br>
 <h3>References</h3>
 <ol type="1">
